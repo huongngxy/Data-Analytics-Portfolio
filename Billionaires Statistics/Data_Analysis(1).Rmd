@@ -130,7 +130,7 @@ plot_ges <- ggplot(ges, aes(x = "", y = Anteilp, fill = factor_ges)) +
   guides(fill = guide_legend(title = "Gender"))  + 
   coord_polar("y", start=0) + 
   labs(color = NULL,
-       title = "Distribution of world's billionaires by gender")
+       title = "Distribution of world's billionaires by gender") 
 plot_ges
 
 ```
