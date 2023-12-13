@@ -10,7 +10,7 @@ output:
     toc: yes
     toc_float: yes
     df_print: paged
-    code_folding: hide
+    code_folding: hide 
 ---
 
 ```{r setup, include=FALSE}
@@ -104,7 +104,7 @@ pl_cat <- ggplot(category1, aes(x = reorder(factor_category, -Freq),
        x = "Industries",
        title = "Distribution of world's billionaires by industry") + 
   theme(strip.background = element_blank(),
-        axis.text.x = element_text(angle = 45,
+        axis.text.x = element_text(angle = 70,
                                    hjust = 1)) 
 pl_cat
 
@@ -120,7 +120,7 @@ factor_ges <- factor(df_Billionaires$gender)
 ges <- as.data.frame(table(factor_ges)) %>%
   rename(Anzahl = Freq) %>%
   mutate(Anteil = Anzahl/2640) %>%
-  mutate(Anteilp = scales::percent(Anteil, accuracy = 0.01))
+  mutate(Anteilp = scales::percent(Anteil, accuracy = 0.01)) 
 
 plot_ges <- ggplot(ges, aes(x = "", y = Anteilp, fill = factor_ges)) + 
   geom_bar(stat = 'identity', width = 0.6) + 
@@ -291,9 +291,9 @@ The observations suggest that there could be a correlation between age and indus
 
 
 
-```{r figure 8, echo=FALSE, fig.align="center", out.height= '100%', out.width='100%'}
+```{r figure 8, echo=FALSE, fig.align="center", out.height= '80%', out.width='80%'}
 knitr::include_graphics("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/All plots/Chi Square Tests.png")
-
+#the test was computed in IBM SPSS
 ```
 The p-value of 0.000 - displayed under "asymptotic significance (2-sided)" in row "Pearson Chi-Square"- is below the significance level under the assumption that the significance level is set at 0.05. The null hypothesis is therefore rejected and the observations were true. There is a statistically significant association between age groups and industries.\ 
 
