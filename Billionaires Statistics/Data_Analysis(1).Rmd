@@ -322,7 +322,7 @@ plot_anova <- ggplot(df_anova, aes(x = reorder(industries,-mean,
   theme(strip.background = element_blank(),
         axis.text.x = element_text(angle = 45,
                                    hjust = 1))
-
+ 
 plot_anova
 ```
 Despite the findings from Figure 1 that finance & investments has the most billionaires, its average net worth only ranks 12th among 18 sectors.\ 
