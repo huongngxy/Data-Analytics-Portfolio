@@ -6,7 +6,7 @@ output:
   html_document: 
     css: style.css
     theme: flatly
-    highlight: tango
+    highlight: tango 
     toc: yes
     toc_float: yes
     df_print: paged
