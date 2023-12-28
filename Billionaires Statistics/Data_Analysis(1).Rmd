@@ -12,7 +12,7 @@ output:
     df_print: paged
     code_folding: hide 
     fig_caption: yes
-
+ 
 ---
 
 ```{r setup, include=FALSE}
@@ -195,7 +195,7 @@ plot_status <- ggplot(status, aes(x = "", y = Anteilp, fill = factor_status)) +
                     values=c("beige", "coral1")) + 
   coord_polar("y", start=0) + 
   labs(color = NULL,
-       title = "Figure 4: Distribution of word's billionaires by status")
+       title = "Figure 4: Distribution of world's billionaires by status")
 plot_status
 
 ```
@@ -206,7 +206,7 @@ The largest part (68.64%) of the billionaires are self-made, whereas the rest 31
 
 ```{r figure_5, echo = FALSE, fig.retina=2, out.width="100%"}
 
-knitr::include_graphics("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/Age distribution.png")
+knitr::include_graphics("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/Age distribution1.png")
 
 #the plot was generated in IBM SPSS 
 ```
@@ -262,7 +262,7 @@ plot_netw_industry <- ggplot(netw_industry_sorted, aes(x = reorder(category, -su
   theme_bw() + 
   labs(y = "Aggregated net wealth in $bln", 
        x = "Industry",
-       title = "Figure 7: Aggregated Net Worth by Industry") + 
+       title = "Figure 7: Aggregated net worth by industry") + 
   theme(strip.background = element_blank(),
         axis.text.x = element_text(angle = 45,
                                    hjust = 1))
@@ -286,8 +286,8 @@ plot_anova <- ggplot(df_anova, aes(x = reorder(industries,-mean,
   theme_bw() + 
   geom_text(aes(label = scales::number(mean, accuracy = 0.01)),
             vjust = -0.3, size = 3) +
-  labs(y = "average net worth $bn",
-       x = "industry",
+  labs(y = "Average net worth $bn",
+       x = "Industry",
        title = "Figure 8: Average net worth by industry") +
   theme(strip.background = element_blank(),
         axis.text.x = element_text(angle = 45,
@@ -337,7 +337,7 @@ plot_treemap <- df_ageindus_final %>%
   geom_treemap_subgroup_border(colour = "white") + 
   scale_fill_tableau(palette = "Hue Circle") + 
   guides(fill = guide_legend(title = "Industry")) +
-  labs(title = "Percentage of different industries in different age groups") 
+  labs(title = "Figure 9: Percentage of different industries in different age groups") 
 plot_treemap 
 ```
 
