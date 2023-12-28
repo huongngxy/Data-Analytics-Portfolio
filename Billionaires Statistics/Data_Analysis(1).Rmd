@@ -260,7 +260,7 @@ plot_netw_industry <- ggplot(netw_industry_sorted, aes(x = reorder(category, -su
   geom_bar(stat = "identity", fill = "#F5CD7A") +
   geom_text(aes(label = summe), vjust = -0.5, size = 2.8) +
   theme_bw() + 
-  labs(y = "Aggregated net wealth in $bln", 
+  labs(y = "Aggregated net wealth in $bn", 
        x = "Industry",
        title = "Figure 7: Aggregated net worth by industry") + 
   theme(strip.background = element_blank(),
