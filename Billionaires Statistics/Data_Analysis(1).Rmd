@@ -1,6 +1,6 @@
 ---
 title: "EDA of World's Billionaires (2023)"
-author: "Huong Nguyen"
+author: "Huong Nguyen" 
 date: "`r Sys.Date()`"
 output:
   html_document: 
