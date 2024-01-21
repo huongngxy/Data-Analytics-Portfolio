@@ -308,25 +308,18 @@ age_groups <- ifelse(df_Billionaires$age < 35, "under 35",
                            ifelse(df_Billionaires$age < 75, "55 to under 75", 
                                   "over 75")))
 df_Billionaires$agegroups <- age_groups
-df_agegroups_industries <- as.data.frame(xtabs(~df_Billionaires$industries + 
+df_agegroups_industries <- as.data.frame(xtabs(~df_Billionaires$industries +
                                                  df_Billionaires$agegroups))
+df_agegroups_industries1 <- df_agegroups_industries %>% 
+  group_by(df_Billionaires.agegroups, df_Billionaires.industries) %>%
+  summarise(anzahl = sum(Freq)) %>%
+  mutate(anteil = anzahl/sum(anzahl)) %>%
+  mutate(per = scales::percent(anteil, accuracy = 0.01))
 
-
-v1 <- df_agegroups_industries$Freq[1:18] / sum(df_agegroups_industries$Freq[1:18]) 
-v2 <- df_agegroups_industries$Freq[19:36] / sum(df_agegroups_industries$Freq[19:36])
-v3 <- df_agegroups_industries$Freq[37:54] / sum(df_agegroups_industries$Freq[37:54])
-v4 <- df_agegroups_industries$Freq[55:72] / sum(df_agegroups_industries$Freq[55:72])                                  
-
-v5 <- c(v1,v2,v3,v4)
-df_agegroups_industries$v5 <- v5            
-
-df_ageindus_final <- df_agegroups_industries %>%
-  mutate(v5= scales::percent(v5, accuracy = 0.01))
-
-plot_treemap <- df_ageindus_final %>%
-  ggplot(aes(area = Freq, fill = df_Billionaires.industries, 
+plot_treemap <- df_agegroups_industries1  %>%
+  ggplot(aes(area = anteil, fill = df_Billionaires.industries, 
              group = df_Billionaires.agegroups, subgroup = df_Billionaires.industries,
-             label = paste0(df_Billionaires.industries, "\n",v5))) + 
+             label = paste0(df_Billionaires.industries, "\n", per))) + 
   geom_treemap() + 
   facet_wrap(~factor(df_Billionaires.agegroups, c("under 35", "35 to under 55", 
                                                   "55 to under 75", "over 75")))  + 
