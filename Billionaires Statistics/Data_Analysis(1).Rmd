@@ -211,7 +211,7 @@ knitr::include_graphics("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanal
 #the plot was generated in IBM SPSS 
 ```
 
-Based on the normal curve, the distribution of the population's age is approximately normal since the most common age falls between 55 and 60, but not at the peak of the normal curve (between 60-65 or 70-75).\
+Based on the normal curve, the distribution of the population's age is approximately normal since the most common age falls between 55 and 60, but not at the peak of the normal curve (between 60-65 or 65-70).\
 
 ## 2.6 Top 10 richest
 
