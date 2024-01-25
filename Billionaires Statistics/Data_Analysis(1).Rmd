@@ -336,13 +336,7 @@ plot_treemap
 
 It is observed that the percentage of billionaires involved in the technology sector declines across the age groups (from 28%, 25.10%, 10.06% to 4.89%). Younger billionaires tend to be more involved in the tech industry than older ones.\
 The opposite applies to Investment and Finance, where the percentage rises as age increases (from 0%, 13.62%, 14.33% to 14.53%). Older billionaires seem to be more active in the investment and finance industry than younger ones.\
-These observations suggest that there could be a correlation between age and industry. 
-By computing the chi-square-test from inferential statistics, the observations can be verified.\
 
 
-```{r figure_10, echo=FALSE, fig.align="center", out.height= '80%', out.width='80%'}
-knitr::include_graphics("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/All plots/Chi Square Tests.png")
-#the test was computed in IBM SPSS
-```
-The p-value of 0.000 - displayed in row "Pearson Chi-Square" under "asymptotic significance (2-sided)" - is below the significance level under the assumption that the significance level is set at 0.05. The null hypothesis is therefore rejected and the observations are true. There is a statistically significant association between age groups and industries.\ 
+
 
