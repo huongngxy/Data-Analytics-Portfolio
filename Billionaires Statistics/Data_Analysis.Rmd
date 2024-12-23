@@ -1,0 +1,342 @@
+---
+title: "EDA of World's Billionaires"
+author: "Huong Nguyen" 
+date: "`r Sys.Date()`"
+output:
+  html_document:  
+    css: style.css
+    theme: flatly
+    highlight: tango 
+    toc: yes
+    toc_float: yes
+    df_print: paged
+    code_folding: show 
+    fig_caption: yes 
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+library(naniar) 
+library(ggplot2)
+library(plotly)  
+library(dplyr) 
+library(viridis)
+library(readr)
+library(treemapify)    
+library(ggthemes) 
+library(tidyverse)
+library(psych) 
+library(imager)
+library(cssTools)
+
+
+```
+
+# 1. Introduction
+
+The dataset contains statistics on the world's billionaires in 2023 and is obtained from [Kaggle](https://www.kaggle.com/datasets/nelgiriyewithana/billionaires-statistics-dataset). \ 
+\
+It includes the billionaires' demographic information, industries, businesses, and several selected macroeconomic indices, such as the CPI, GDP, gross tertiary education enrollment, gross primary education enrollment, life expectancy, tax revenue, tax rate and population. All the macroeconomic indices refer to the billionaires' current country of residence.\ 
+
+```{r include=FALSE}
+# import raw data
+Billionaires_Statistics_Dataset <- read_csv("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/Billionaires Statistics Dataset.csv",
+                            show_col_types = FALSE)
+Billionaires_Statistics_Dataset
+
+
+miss_var_summary(Billionaires_Statistics_Dataset, order = TRUE) #package "naniar"
+
+# 2. Data Cleaning 
+# Importing external data to fill NA in column gdp_country 
+external_gdp_data <- read_csv("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/external_gdp_data.csv")
+external_gdp_data
+
+ # select data with missing values in column gdp_country 
+billionaires_missing_gdp <- Billionaires_Statistics_Dataset %>% filter(is.na(Billionaires_Statistics_Dataset$gdp_country))
+billionaires_missing_gdp
+
+#group data with missing values in gdp_country by country
+billionaires_missing_gdp_grouped <- billionaires_missing_gdp %>% group_by(country)  
+billionaires_missing_gdp_grouped
+
+# count how many billionaires do the listed countries with missing values have
+billionaires_missing_gdp_summary <- billionaires_missing_gdp_grouped %>% summarize(billionaires_count = n()) 
+billionaires_missing_gdp_summary
+
+# Merging GDP data from the external dataset to the main one 
+Billionaires_Statistics_Dataset$gdp_country <- ifelse(is.na(Billionaires_Statistics_Dataset$gdp_country), 
+                                                      external_gdp_data$gdp_country[match(Billionaires_Statistics_Dataset$country, external_gdp_data$country)],Billionaires_Statistics_Dataset$gdp_country)
+
+# Rename some variables 
+df_Billionaires <- Billionaires_Statistics_Dataset %>%
+  rename('state_US' = 'state') %>%
+  rename('residenceStateRegionUS' = 'residenceStateRegion') %>%
+  mutate( finalWorth = finalWorth / 1000) %>%
+  rename('finalWorth_bln' = "finalWorth")
+
+missing_summary <- miss_var_summary(df_Billionaires, order = TRUE)
+print.data.frame(missing_summary)
+
+# Missing Values in column gdp_country reduces from 164 to 38 
+
+#final dataset 
+df_Billionaires
+```
+
+# 2. Distribution 
+
+## 2.1 By Industry 
+
+```{r figure_1, fig.align="center", out.height='100%', out.width='100%'}
+
+factor_category <- factor(df_Billionaires$category)
+category1 <- as.data.frame(table(factor_category)) 
+
+pl_cat <- ggplot(category1, aes(x = reorder(factor_category, -Freq),
+                                y = Freq)) + 
+  geom_bar(stat = 'identity', aes(fill = Freq)) +
+  scale_fill_viridis() +     #from package "viridis"
+  geom_text(aes(label= Freq), vjust=-0.3, size=2.5) +
+  theme_bw() +
+  labs(color = NULL,
+       y = "Frequency", 
+       x = "Industries",
+       title = "Figure 1: Distribution of world's billionaires by industry") + 
+  theme(strip.background = element_blank(),
+        axis.text.x = element_text(angle = 70,
+                                   hjust = 1)) 
+pl_cat
+
+```
+
+The Finance & Investements industry has the highest number of billionaires (372). Other most populous sectors are Manufacturing (372), Technology (314), Fashion & Retail (266) and Food & Beverage (212).\
+
+## 2.2 By Gender
+
+```{r figure_2 , fig.align="center", out.height='100%', out.width='100%'}
+
+factor_ges <- factor(df_Billionaires$gender)
+ges <- as.data.frame(table(factor_ges)) %>%
+  rename(Anzahl = Freq) %>%
+  mutate(Anteil = Anzahl/2640) %>%
+  mutate(Anteilp = scales::percent(Anteil, accuracy = 0.01)) 
+
+plot_ges <- ggplot(ges, aes(x = "", y = Anteilp, fill = factor_ges)) + 
+  geom_bar(stat = 'identity', width = 0.6) + 
+  geom_text(aes(label = Anteilp), 
+            position = position_stack(vjust = 0.5), size= 4) +
+  theme_void() + 
+  guides(fill = guide_legend(title = "Gender"))  + 
+  coord_polar("y", start=0) + 
+  labs(color = NULL,
+       title = "Figure 2: Distribution of world's billionaires by gender") 
+plot_ges 
+
+```
+
+The majority of the billionaires (87.23%) are male, whereas only 12.77% are female.\ 
+
+## 2.3 By Country
+
+```{r figure_3,  fig.align="center", out.height='100%', out.width='100%'}
+
+factor_country <- factor(df_Billionaires$country)
+country <- as.data.frame(table(factor_country)) 
+country_sorted <- country[order(country$Freq),] %>%
+  tail( n= 10L)
+
+cols1 <- c( "pink",
+            "#BF87B3","#BF87B3","#BF87B3","#BF87B3","#BF87B3",
+            "#8255a1",
+            "#8255a1", 
+            rgb(72/255, 32/255, 143/255),
+            rgb(72/255, 32/255, 143/255))
+
+plot_country <- ggplot(country_sorted, aes(x = reorder(factor_country, -Freq, 
+                                                       decreasing = FALSE),
+                                           y = Freq)) + 
+  geom_bar(stat = 'identity', fill = cols1) + 
+  geom_text(aes(label= Freq), vjust=-0.3, size=3) +
+  theme_bw() + 
+  labs(color = NULL,
+       y = "Number of Billionaires", 
+       x = "Country",
+       title = "Figure 3: Distribution of world's billionaires by country") + 
+ theme(strip.background = element_blank(),
+        axis.text.x = element_text(angle = 45,
+                                   hjust = 1, size = 9),
+       axis.text.y = element_text(size = 9)) 
+plot_country
+
+```
+
+The United States has the most billionaires, followed by China, India and Germany.\ 
+
+## 2.4 By Status 
+
+```{r figure_4, fig.align="center", out.height='100%', out.width='100%'}
+
+factor_status <- factor(df_Billionaires$selfMade)
+status <- as.data.frame(table(factor_status)) %>%
+  mutate(Anteil = Freq/2640) %>%
+  mutate(Anteilp = scales::percent(Anteil, accuracy = 0.01))
+
+plot_status <- ggplot(status, aes(x = "", y = Anteilp, fill = factor_status)) + 
+  geom_bar(stat = 'identity') +
+  theme_void() + 
+  geom_text(aes(label = Anteilp),
+            position = position_stack(vjust = 0.5), size= 4.5) +
+  guides(fill = guide_legend(title = "Status")) +
+  scale_fill_manual(labels = c("inherited", "self-made"), 
+                    values=c("beige", "coral1")) + 
+  coord_polar("y", start=0) + 
+  labs(color = NULL,
+       title = "Figure 4: Distribution of world's billionaires by status")
+plot_status
+
+```
+
+The largest part (68.64%) of the billionaires are self-made, whereas the rest 31.36% are inherited.\
+
+## 2.5 By Age 
+
+```{r figure_5, echo = FALSE, fig.retina=2, out.width="100%"}
+
+knitr::include_graphics("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/Age distribution1.png")
+
+#the plot was generated in IBM SPSS 
+```
+
+Based on the normal curve, the distribution of the population's age is approximately normal since the most common age falls between 55 and 60, but not at the peak of the normal curve (between 60-65 or 65-70).\
+
+## 2.6 Top 10 richest
+
+```{r figure_6, fig.align="center", out.height='100%', out.width='100%'}
+
+top10 <- df_Billionaires %>% 
+  head(n = 10L)
+
+plot_top10 <- ggplot(top10, aes(x = reorder(personName, finalWorth_bln), 
+                                y = finalWorth_bln, fill = category)) + 
+  geom_bar(stat = 'identity') +
+  geom_text(aes(label = finalWorth_bln),hjust = -0.5, size = 1.8)  + 
+  guides(fill = guide_legend(title = "Category")) + 
+  theme_bw() +
+  coord_flip() + 
+  labs(color = NULL, 
+       y = "Net wealth in billion USD", 
+       x = NULL,
+       title = "Figure 6: Top 10") + 
+  theme(strip.background = element_blank(),
+        axis.text.y = element_text(size = 7.5),
+        legend.key.size = unit(0.3, 'cm'),
+        legend.text = element_text(size = 7))
+plot_top10
+
+```
+
+As of 04.04.2023, Bernard Arnault & family from the fashion & retail industry rank first among the world's 10 wealthiest people with the highest net worth of $211 billion.\
+Elon Musk is the world's second wealthiest person whose net worth stems from the automotive industry.\
+Technology is most populous sector in the top 10 since it has 4 billionaires named in the list including Jeff Bezos ($114 billion), Larry Ellison ($107 billion), Bill Gates ($104 billion) and Steve Ballmer ($80.7 billion).\
+
+# 3. Crosstabulations
+
+## 3.1 Net Worth and Industries
+
+```{r figure_7, fig.align = "center", out.height = "100%", out.width = "100%"}
+netw_industry <- df_Billionaires %>%
+  group_by(category) %>%
+  summarise(summe = sum(finalWorth_bln)) %>%
+  mutate(Pct = summe/sum(summe)) %>%
+  mutate(Per = scales::percent(Pct, accuracy = 0.01))
+
+netw_industry_sorted <- netw_industry[order(-netw_industry$summe),]
+
+plot_netw_industry <- ggplot(netw_industry_sorted, aes(x = reorder(category, -summe, decreasing = FALSE), y = summe)) +
+  geom_bar(stat = "identity", fill = "#F5CD7A") +
+  geom_text(aes(label = summe), vjust = -0.5, size = 2.8) +
+  theme_bw() + 
+  labs(y = "Aggregated net wealth in $bn", 
+       x = "Industry",
+       title = "Figure 7: Aggregated net worth by industry") + 
+  theme(strip.background = element_blank(),
+        axis.text.x = element_text(angle = 45,
+                                   hjust = 1))
+plot_netw_industry
+```
+Technology, Fashion & Retail, Finance & Investments, Manufacturing and Food & Beverage are the top five industries that have the highest aggregated net worth. This can be explained by the fact that these five industries have the highest number of billionaires (as Figure 1 suggests). 
+
+```{r figure_8, fig.align="center", out.height="100%", out.width="100%"}
+df_anova <- df_Billionaires %>%
+  group_by(industries) %>%
+  summarize(min = min(finalWorth_bln),
+            max = max(finalWorth_bln),
+            median = median(finalWorth_bln),
+            mean = mean(finalWorth_bln))
+df_anova
+
+plot_anova <- ggplot(df_anova, aes(x = reorder(industries,-mean,
+                                               decreasing = FALSE), y = mean)) +
+  geom_bar(stat = "identity",aes(fill = mean)) + 
+  scale_fill_viridis(option = "magma", name = paste0("average", "\n","net worth"))+ 
+  theme_bw() + 
+  geom_text(aes(label = scales::number(mean, accuracy = 0.01)),
+            vjust = -0.3, size = 3) + 
+  labs(y = "Average net worth $bn",
+       x = "Industry",
+       title = "Figure 8: Average net worth by industry") +
+  theme(strip.background = element_blank(),
+        axis.text.x = element_text(angle = 45,
+                                   hjust = 1))
+ 
+plot_anova
+``` 
+The automotive sector has the highest average net worth ($7.20 billion) among other sectors.\
+That the results differ from Figures 1 and 7 can be explained by the proportion between the aggregated net worth and the number of billionaires within the corresponding industry. 
+
+
+## 3.2 Industries and Age groups 
+
+```{r figure_9, fig.align="center", out.height='100%', out.width='100%'}
+
+age_groups <- ifelse(df_Billionaires$age < 35, "under 35",
+                    ifelse(df_Billionaires$age < 55, "35 to under 55",
+                           ifelse(df_Billionaires$age < 75, "55 to under 75", 
+                                  "over 75")))
+df_Billionaires$agegroups <- age_groups
+df_agegroups_industries <- as.data.frame(xtabs(~df_Billionaires$industries +
+                                                 df_Billionaires$agegroups))
+df_agegroups_industries1 <- df_agegroups_industries %>% 
+  group_by(df_Billionaires.agegroups, df_Billionaires.industries) %>%
+  summarise(count = sum(Freq)) %>%
+  mutate(per = count/sum(count)) %>%
+  mutate(percent = scales::percent(per, accuracy = 0.01))
+
+plot_treemap <- df_agegroups_industries1  %>%
+  ggplot(aes(area = per, fill = df_Billionaires.industries, 
+             group = df_Billionaires.agegroups, subgroup = df_Billionaires.industries,
+             label = paste0(df_Billionaires.industries, "\n", percent))) + 
+  geom_treemap() + 
+  facet_wrap(~factor(df_Billionaires.agegroups, c("under 35", "35 to under 55", 
+                                                  "55 to under 75", "over 75")))  + 
+  theme(strip.text = element_text(face = "bold", size = 10, color = "black"),
+        legend.key.size = unit(0.5, 'cm'),
+        legend.text = element_text(size = 7))+ 
+  geom_treemap_text(grow = F, reflow = T, size = 7, colour = "black") +
+  geom_treemap_subgroup_border(colour = "white") + 
+  scale_fill_tableau(palette = "Hue Circle") + 
+  guides(fill = guide_legend(title = "Industry")) +
+  labs(title = "Figure 9: Percentage of different industries in different age groups") 
+plot_treemap 
+```
+
+It is observed that the percentage of billionaires involved in the technology sector declines across the age groups (from 28%, 25.10%, 10.06% to 4.89%). Younger billionaires tend to be more involved in the tech industry than older ones.\
+The opposite applies to Investment and Finance, where the percentage rises as age increases (from 0%, 13.62%, 14.33% to 14.53%). Older billionaires seem to be more active in the investment and finance industry than younger ones.\
+
+
+ 
+
