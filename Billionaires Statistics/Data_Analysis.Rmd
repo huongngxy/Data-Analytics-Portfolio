@@ -1,7 +1,7 @@
 ---
 title: "EDA of World's Billionaires"
 author: "Huong Nguyen" 
-date: "`r Sys.Date()`"
+date: "2024-02-10"
 output:
   html_document:  
     css: style.css
@@ -35,43 +35,59 @@ library(cssTools)
 
 ```
 
-# 1. Introduction
+# Introduction
 
 The dataset contains statistics on the world's billionaires in 2023 and is obtained from [Kaggle](https://www.kaggle.com/datasets/nelgiriyewithana/billionaires-statistics-dataset). \ 
 \
 It includes the billionaires' demographic information, industries, businesses, and several selected macroeconomic indices, such as the CPI, GDP, gross tertiary education enrollment, gross primary education enrollment, life expectancy, tax revenue, tax rate and population. All the macroeconomic indices refer to the billionaires' current country of residence.\ 
 
+
 ```{r include=FALSE}
 # import raw data
-Billionaires_Statistics_Dataset <- read_csv("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/Billionaires Statistics Dataset.csv",
+Billionaires_Statistics_Dataset <- read_csv("./Billionaires Statistics Dataset.csv",
                             show_col_types = FALSE)
 Billionaires_Statistics_Dataset
+```
 
+```{r include= FALSE}
+# check for missing values
+miss_var_summary(Billionaires_Statistics_Dataset, order = TRUE)
+```
 
-miss_var_summary(Billionaires_Statistics_Dataset, order = TRUE) #package "naniar"
-
-# 2. Data Cleaning 
+```{r include=FALSE}
 # Importing external data to fill NA in column gdp_country 
-external_gdp_data <- read_csv("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanalyse/external_gdp_data.csv")
+external_gdp_data <- read_csv("./external_gdp_data.csv")
 external_gdp_data
+```
 
- # select data with missing values in column gdp_country 
+
+```{r include=FALSE}
+# select data with missing values in column gdp_country 
 billionaires_missing_gdp <- Billionaires_Statistics_Dataset %>% filter(is.na(Billionaires_Statistics_Dataset$gdp_country))
 billionaires_missing_gdp
+```
 
-#group data with missing values in gdp_country by country
+
+```{r include=FALSE}
+# group data with missing values in gdp_country by country
 billionaires_missing_gdp_grouped <- billionaires_missing_gdp %>% group_by(country)  
 billionaires_missing_gdp_grouped
+```
 
-# count how many billionaires do the listed countries with missing values have
+
+```{r include=FALSE}
+# count how many billionaires the listed countries with missing values have
 billionaires_missing_gdp_summary <- billionaires_missing_gdp_grouped %>% summarize(billionaires_count = n()) 
 billionaires_missing_gdp_summary
+```
 
-# Merging GDP data from the external dataset to the main one 
+
+```{r include=FALSE}
+# merge GDP data from the external dataset to the main one 
 Billionaires_Statistics_Dataset$gdp_country <- ifelse(is.na(Billionaires_Statistics_Dataset$gdp_country), 
                                                       external_gdp_data$gdp_country[match(Billionaires_Statistics_Dataset$country, external_gdp_data$country)],Billionaires_Statistics_Dataset$gdp_country)
 
-# Rename some variables 
+# rename some variables 
 df_Billionaires <- Billionaires_Statistics_Dataset %>%
   rename('state_US' = 'state') %>%
   rename('residenceStateRegionUS' = 'residenceStateRegion') %>%
@@ -80,16 +96,19 @@ df_Billionaires <- Billionaires_Statistics_Dataset %>%
 
 missing_summary <- miss_var_summary(df_Billionaires, order = TRUE)
 print.data.frame(missing_summary)
-
-# Missing Values in column gdp_country reduces from 164 to 38 
-
-#final dataset 
-df_Billionaires
+# missing Values in column gdp_country reduces from 164 to 38 
 ```
 
-# 2. Distribution 
 
-## 2.1 By Industry 
+```{r include=FALSE}
+# final dataset 
+df_Billionaires
+```
+# Visualisation 
+
+## 1. Distribution 
+
+### 1.1 By Industry 
 
 ```{r figure_1, fig.align="center", out.height='100%', out.width='100%'}
 
@@ -113,9 +132,9 @@ pl_cat
 
 ```
 
-The Finance & Investements industry has the highest number of billionaires (372). Other most populous sectors are Manufacturing (372), Technology (314), Fashion & Retail (266) and Food & Beverage (212).\
+The Finance & Investments industry has the highest number of billionaires (372). Other most populous sectors are Manufacturing (372), Technology (314), Fashion & Retail (266) and Food & Beverage (212).\
 
-## 2.2 By Gender
+### 1.2 By Gender
 
 ```{r figure_2 , fig.align="center", out.height='100%', out.width='100%'}
 
@@ -140,7 +159,7 @@ plot_ges
 
 The majority of the billionaires (87.23%) are male, whereas only 12.77% are female.\ 
 
-## 2.3 By Country
+### 1.3 By Country
 
 ```{r figure_3,  fig.align="center", out.height='100%', out.width='100%'}
 
@@ -176,7 +195,7 @@ plot_country
 
 The United States has the most billionaires, followed by China, India and Germany.\ 
 
-## 2.4 By Status 
+### 1.4 By Status 
 
 ```{r figure_4, fig.align="center", out.height='100%', out.width='100%'}
 
@@ -202,7 +221,7 @@ plot_status
 
 The largest part (68.64%) of the billionaires are self-made, whereas the rest 31.36% are inherited.\
 
-## 2.5 By Age 
+### 1.5 By Age 
 
 ```{r figure_5, echo = FALSE, fig.retina=2, out.width="100%"}
 
@@ -213,7 +232,7 @@ knitr::include_graphics("C:/Users/lhuon/OneDrive - HWR Berlin/WS 23,24/Datenanal
 
 Based on the normal curve, the distribution of the population's age is approximately normal since the most common age falls between 55 and 60, but not at the peak of the normal curve (between 60-65 or 65-70).\
 
-## 2.6 Top 10 richest
+### 1.6 Top 10 richest
 
 ```{r figure_6, fig.align="center", out.height='100%', out.width='100%'}
 
@@ -241,11 +260,11 @@ plot_top10
 
 As of 04.04.2023, Bernard Arnault & family from the fashion & retail industry rank first among the world's 10 wealthiest people with the highest net worth of $211 billion.\
 Elon Musk is the world's second wealthiest person whose net worth stems from the automotive industry.\
-Technology is most populous sector in the top 10 since it has 4 billionaires named in the list including Jeff Bezos ($114 billion), Larry Ellison ($107 billion), Bill Gates ($104 billion) and Steve Ballmer ($80.7 billion).\
+Technology is most populous sector in the top 10 since it has four billionaires named in the list including Jeff Bezos ($114 billion), Larry Ellison ($107 billion), Bill Gates ($104 billion) and Steve Ballmer ($80.7 billion).\
 
-# 3. Crosstabulations
+## 2. Crosstabulations
 
-## 3.1 Net Worth and Industries
+### 2.1 Net Worth and Industries
 
 ```{r figure_7, fig.align = "center", out.height = "100%", out.width = "100%"}
 netw_industry <- df_Billionaires %>%
@@ -268,7 +287,7 @@ plot_netw_industry <- ggplot(netw_industry_sorted, aes(x = reorder(category, -su
                                    hjust = 1))
 plot_netw_industry
 ```
-Technology, Fashion & Retail, Finance & Investments, Manufacturing and Food & Beverage are the top five industries that have the highest aggregated net worth. This can be explained by the fact that these five industries have the highest number of billionaires (as Figure 1 suggests). 
+Technology, Fashion & Retail, Finance & Investments, Manufacturing, and Food & Beverage represent the top five industries by aggregated net worth. This aligns with their high concentration of billionaires, as shown in Figure 1. 
 
 ```{r figure_8, fig.align="center", out.height="100%", out.width="100%"}
 df_anova <- df_Billionaires %>%
@@ -295,11 +314,9 @@ plot_anova <- ggplot(df_anova, aes(x = reorder(industries,-mean,
  
 plot_anova
 ``` 
-The automotive sector has the highest average net worth ($7.20 billion) among other sectors.\
-That the results differ from Figures 1 and 7 can be explained by the proportion between the aggregated net worth and the number of billionaires within the corresponding industry. 
+The automotive sector leads with the highest average net worth ($7.20 billion) per billionaire. This differs from the patterns seen in Figures 1 and 7 because average net worth depends on the ratio between total industry wealth and number of billionaires in each sector.
 
-
-## 3.2 Industries and Age groups 
+### 2.2 Industries and Age groups 
 
 ```{r figure_9, fig.align="center", out.height='100%', out.width='100%'}
 
@@ -334,8 +351,8 @@ plot_treemap <- df_agegroups_industries1  %>%
 plot_treemap 
 ```
 
-It is observed that the percentage of billionaires involved in the technology sector declines across the age groups (from 28%, 25.10%, 10.06% to 4.89%). Younger billionaires tend to be more involved in the tech industry than older ones.\
-The opposite applies to Investment and Finance, where the percentage rises as age increases (from 0%, 13.62%, 14.33% to 14.53%). Older billionaires seem to be more active in the investment and finance industry than younger ones.\
+A clear age-related trend emerges in the technology sector, with billionaire representation steadily declining across age groups (28%, 25.10%, 10.06%, 4.89%). This suggests younger billionaires are significantly more likely to have built their wealth in technology.\
+Conversely, the Finance & Investment sector shows an increasing presence with age (0%, 13.62%, 14.33%, 14.53%), indicating this industry tends to produce billionaires later in their careers.
 
 
  
